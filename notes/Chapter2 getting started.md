@@ -16,14 +16,14 @@
 ### create an RDD with a local text
 
 - python
-```
+```python
 >>> lines = sc.textFile("README.md")	#create an RDD called lines
 >>> lines.count()		# the numbere of items
 >>> lines.first()		# first item
 ``` 
 
 - scala
-```
+```scala
 scala> val lines = sc.textFile("README.md")
 scala> lines.count()
 scala> lines.first()
@@ -44,13 +44,13 @@ scala> lines.first()
 ### filtering example
 
 - python
-```
+```python
 >>> lines = sc.textFile("README.md")
 >>> pythonLines = lines.filter(lambda line: "Python" in line)
 >>> pythonLines.first()
 ```
 - scala
-```
+```scala
 scala> val lines = sc.textFile("README.md")
 scala> val pythonLines = lines.filter(line => line.contains("Python"))
 scala> pythonLines.first()
@@ -77,7 +77,7 @@ bin/spark-submit name.py
 - the build a SparkContext for it
 
 > python
-```
+```python
 from pyspark import SparkConf, SparkContext
 
 conf = SparkConf().setMaster("local").setAppName("My App")
@@ -86,7 +86,7 @@ sc = SparkContext(conf = conf)
 
 > scala
 
-```
+```scala
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -107,7 +107,7 @@ val sc = new SparkContext(conf)
 ### Build Standalone WORD COUNT application
 
 - scala file
-```
+```scala
 // Create a Scala Spark Context.
 val conf = new SparkConf().setAppName("wordCount")
 val sc = new SparkContext(conf)
@@ -138,7 +138,7 @@ libraryDependencies ++= Seq(
 ```
 
 - python version
-```
+```python
 #test.py
 
 from pyspark import SparkConf,SparkContext

@@ -24,11 +24,11 @@ Choosing the right partitioning for a distributed dataset is similar to choosing
 	- example : creating a pair RDD using the first word as the key
 
 > python --- return a tuple
-```
+```python
 pairs = lines.map(lambda x : (x.split(" ")[0], x))
 ```
 > scala
-```
+```scala
 val pairs = lines.map(x => (x.split(" ")(0), x))
 ```
 
@@ -42,7 +42,7 @@ Since pair RDDs contain tuples, we need to pass functions that operate on tuples
 example : transformations on one pair RDD {(1,2),(3,4),(3,6)}
 
 function | purpose | example(scala) | result
-- | - | - | -
+:-: | :-: | :-: | :-:
 reduceByKey(func) | combine values with the same key | rdd.reduceByKey((x,y) => x + y) | {(1,2),(3,10)}
 groupByKey() | group values with the same key | rdd.groupByKey() | {(1,[2]),(3,[4,6])}
 combineByKey(createCombiner,mergeValue,mergeCombiners,partitoner) | combine values with the same key using a different result type |  | 
@@ -58,7 +58,7 @@ example: transformations on 2 pair RDDs rdd = {(1,2),(3,4),(3,6)} , other = {(3,
 
 
 function | purpose | example(scala) | result
-- | - | - | -
+:-: | :-: | :-: | :-:
 subtractByKey | Remove elements with a key present in the other RDD | rdd.subtractByKey(other) | {(1, 2)}
 join | Perform an inner join between two RDDs | rdd.join(other){(3, (4, 9)), (3,(6, 9))} 
 rightOuterJoin | Perform a join between two RDDs where the key must be present in the first RDD. | rdd.rightOuterJoin(other) | {(3,(Some(4),9)), (3,(Some(6),9))}
@@ -69,7 +69,7 @@ cogroup | Group data from both RDDs sharing the same key. | rdd.cogroup(other) |
 - pair RDDs are also still RDDs and thus support the same function as RDDs
 
 > python
-```
+```python
 result = pairs.filter(lambda keyValue : keyValue[1] < 20)
 ```
 
@@ -87,21 +87,21 @@ result = pairs.filter(lambda keyValue : keyValue[1] < 20)
 	- zero value is kind of a initial value
 
 > calculate per-key average with Python
-```
+```python
 rdd.mapValues(lambda x : (x,1)).reduceByKey(lambda x,y : (x[0] + y[0], x[1] + y[1]))
 ```
 
 - note that calling reduceByKey() and foldByKey() will automatically perform combining locally on each machine before computing global totals for each key
 
 > word count in python
-```
+```python
 rdd = sc.textFile("sample.txt")
 words = rdd.flatMap(lambda x : x.split(" "))
 result = words.map(lambda x : (x,1)).reduceByKey(lambda x,y : x + y)
 ```
 
 > even faster by using **countByValue()**
-```
+```python
 rdd.flatMap(lambda x : x.split(" ")).countByValue()
 ```
 
@@ -121,7 +121,7 @@ rdd.flatMap(lambda x : x.split(" ")).countByValue()
 	- per-key average examples
 
 > python
-```
+```python
 >>> data = [
 	('A', 2.), ('A', 4.), ('A', 9.),
 	('B', 10.), ('B', 20.), 
@@ -146,7 +146,7 @@ rdd.flatMap(lambda x : x.split(" ")).countByValue()
 - most operators accept a second parameter giving the number of partitions to use when creating the grouped or aggregated RDD
 
 > reduceByKey() with custom parallelism in Python
-```
+```python
 >>> data = [
 	('a', 3), ('b', 4), ('a', 1)
 	]
@@ -189,7 +189,7 @@ rdd.flatMap(lambda x : x.split(" ")).countByValue()
 - **rightOuterJoin()** : identical to left one except the key must be present in the other RDD and the tuple has an option for the source rather than the other RDD
 
 > scala example
-```
+```scala
 storeAddress = {
   (Store("Ritual"), "1026 Valencia St"), (Store("Philz"), "748 Van Ness Ave"),
   (Store("Philz"), "3101 24th St"), (Store("Starbucks"), "Seattle")}
@@ -221,7 +221,7 @@ once we have sorted our data, any subsequent call on the sorted data to collect(
 the **sortByKey()** function takes a boolean parameter called *ascending* (default : True)
 
 > sorting integers as if strings in python
-```
+```python
 rdd.sortByKey(acsending = True, numPartitions = None, Keyfunc = lambda x : str(x))
 ```
 
@@ -232,7 +232,7 @@ all of the traditional actions available on the base RDD are also available on p
 example :  {(1,2),(3,4),(3,6)}
 
 function | discription | example(scala) | result
-- | - | - | -
+:-: | :-: | :-: | :-:
 countByKey() | Count the number of elements for each key. | rdd.countByKey() | {(1, 1), (3, 2)}
 collectAsMap() | Collect the result as a map to provide easy lookup. | rdd.collectAsMap() | Map {(1, 2), (3, 4), (3, 6)}
 lookup(key) | Return all values associated with the provided key. | rdd.lookup(3) | [4, 6]
@@ -252,7 +252,7 @@ Spark's partitioning is available on all RDDs of key/value pairs, and causes the
 <br>
 
 > scala sample application : count how many user visited a link that was not to ine of their subscribed topics
-```
+```scala
 val sc = new SparkContext(...)
 
 // load the user info from a Hadoop SequenceFile on HDFS
@@ -280,7 +280,7 @@ SOLUTION
 -> use the **partitionBy()** transformation on userData to hash-partition it at the start of the program
 
 > version 2
-```
+```scala
 val sc = new SparkContext(...)
 val userData = sc.sequenceFile[UserID, UserInfo]("hdfs://...")
 		.partitionBy(new HashPartitioner(100))		// create 100 partitions
@@ -309,7 +309,7 @@ in addition, failure to persist an RDD after transformed with partitionBy() will
 1. in fact, many Spark operations automatically result in a RDD with known partitioning information, and many operations will take advantage of this information
 2. operations like map() cause the new RDD to **forget** the parent's partitioning information, because such operations could theoretically modify the key of each record
 3. In Python, you cannot pass a *HashPartitioner* object to partitionBy(); instead, use the number of partitions desired
-```
+```python
 rdd.partitionBy(100)
 ```
 
@@ -323,7 +323,7 @@ in Scala, we can determine how an RDD is partitioned using **partitioner propert
 		- call **isDefined()** to check whether it has a value
 		- call **get()** to get this value
 
-```
+```scala
 // don't forget to import
 
 scala> import org.apache.spark._
@@ -388,7 +388,7 @@ For transformations that cannot be guaranteed to produce a known partitioning, t
 		- in practice, it's typical to run about 10 iterations
 
 > implement PageRank in Scala
-```
+```scala
 // Assume that our neighbor list was saved as a Spark objectFile (pageID,linkList)
 val links = sc.objectFile[(String, Seq[String])]("links")
 		.partitionBy(new HashPartitioner(100))
@@ -444,7 +444,7 @@ To implement a custom partitioner, we need to subclass the **org.apache.spark.Pa
 we have to ensure that getPartition() allways returns a nonnegative result.
 
 > scala custom partitioner
-```
+```scala
 class DomainNamePartitioner(numParts : Int) extends Partitioner{
 	override def numPartitions : Int = numParts
 	override def getPartition(key : Any) : Int = {
@@ -476,7 +476,7 @@ Using a custom Partitioner : just pass it to the partitionBy() method or many ot
 
 we don't need to extend a Partitioner class, but instead pass a hash function as an additional argument to RDD.partitionBy()
 
-```
+```python
 import urlparse
 
 def hash_domain(url) : 

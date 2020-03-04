@@ -11,20 +11,20 @@ in Spark all work is expressed as either creating new RDDs, transforming existin
 - users create RDDs in 2 ways:
 	- by loading an external dataset
 	- by distributing a collection of objects in their driver program
-```
+```python
 >>> lines = sc.textFile("README.md")
 ```
 ### once created, RDDs offer 2 operations
 
 - *Transformations*:construct a new RDD from a previous one(such as filtering)
-```
+```python
 >>> pythonLines = lines.filter(lambda line : "Python" in line)
 ```
 
 - *Actions*:computes a result based on an RDD and return either to
 	- the driver program
 	- or an external storage system
-```
+```python
 >>> pythonLines.first()
 ```
 
@@ -35,7 +35,7 @@ in Spark all work is expressed as either creating new RDDs, transforming existin
 - Spark's RDDs are by default recomputed each time you run an action on them
 
 - if you'd like to reuse an RDD in multiple actions, you can ask Spark to persist it using
-```
+```python
 RDD.persist()
 ```
 - **it doesn't persist by default**
@@ -43,7 +43,7 @@ RDD.persist()
 data once and just compute the result
 
 - in practice, *persist()* is used to load a subset of data into memory and query it repeatedly.
-```
+```python
 >>> pythonLines.persist
 >>> pythonLines.count()
 >>> pythonLines.first()
@@ -68,11 +68,11 @@ load an external dataset or parallelize a collection in driver system
 	- since it requires that you have the entire dataset in memory on one machine
 
 > python
-```
+```python
 lines = sc.parallelize(["pandas","i like pandas"])
 ```
 > scala
-```
+```scala
 val lines = sc.parallelize(List("pandas","i like pandas"))
 ```
 
@@ -82,11 +82,11 @@ val lines = sc.parallelize(List("pandas","i like pandas"))
 - details->Chapter5
 
 > python
-```
+```python
 lines = sc.textFile("README.md")
 ```
 > scala
-```
+```scala
 val lines = sc.textFile("README.md")
 ```
 
@@ -102,13 +102,13 @@ val lines = sc.textFile("README.md")
 - example:**filter()**
 
 > python
-```
+```python
 inputRDD = sc.textfile("log.txt")
 errorsRDD = inputRDD.filter(lambda x : "error" in x)
 ```
 
 >scala
-```
+```scala
 val inputRDD = sc.textFile("log.txt")
 val errorsRDD = inputRDD.filter(line => line.contains("error"))
 ```
@@ -116,13 +116,13 @@ val errorsRDD = inputRDD.filter(line => line.contains("error"))
 
 - example:**union()**
 >python
-```
+```python
 errorsRDD = inputRDD.filter(lambda x : "error" in x)
 warningsRDD = inputRDD.filter(lambda x : "warning" in x)
 badLinesRDD = errorsRDD.union(warningsRDD)
 ```
 or we can just simply
-```
+```python
 badLinesRDD = inputRdd.filter(lambda x : "error" in x or "warning" in x)
 ```
 
@@ -143,14 +143,14 @@ badLinesRDD = inputRdd.filter(lambda x : "error" in x or "warning" in x)
 	- *take()* : collects a number of elements from the RDD
 
 > python
-```
+```python
 print "input has " + badLinesRDD.count() + "lines"
 print "Here are 10 examples:"
 for line in badLinesRDD.take(10):
 	print line
 ```
 > scala
-```
+```scala
 println("input has " + badLinesRDD.count() + "lines")
 println("Here are 10 examples:")
 badLinesRDD.take(10).foreach(println)
@@ -183,12 +183,12 @@ badLinesRDD.take(10).foreach(println)
 ### Python
 
 1. **lambda expressions** : for shorter functions
-```
+```python
 word = rdd.filter(lambda s : "error" in s)
 ```
 
 2. **top-level or locally defined functions**
-```
+```python
 def containsError(s):
 	return "error" in s
 word = rdd.filter(containsError)
@@ -201,7 +201,7 @@ word = rdd.filter(containsError)
 	- sometimes cause programs to fail
 
 > bad example
-```
+```python
 class SearchFunctions(object):
 	def __init__(delf,query):
 		self.query = query
@@ -218,7 +218,7 @@ class SearchFunctions(object):
 - **Instead, just extract the fields you need from your object into a local variable and pass that in**
 
 > good example
-```
+```python
 class SearchFunctions(object):
 	...
 	def getMatchesNoReference(self,rdd):
@@ -240,7 +240,7 @@ as we do for scala's other functional APIs
 <br>
 
 as we did in Python, we can extract the fields we need as local variables and avoid needing to pass the whole object containing them
-```
+```scala
 class SearchFunctions(val query : String){
 	def isMatch(s : String) : Boolean = {
 		s.contains(query)
@@ -279,14 +279,14 @@ two most common transformations you will likely be using:
 	- return type does not have to be the same as its input type
 
 > python
-```
+```python
 nums = sc.parallelize([1,2,3,4])
 squared = nums.map(lambda x : x * x).collect()
 for num in squared:
 	print "%i" % (num)
 ```
 > scala
-```
+```scala
 val input = sc.parallelize(List(1,2,3,4))
 val result = input.map(x => x * x)
 println(result.collect().mkString(","))
@@ -299,7 +299,7 @@ println(result.collect().mkString(","))
 	- simple usage : *splitting up an input string into words*
 
 > python
-```
+```python
 >>> lines = sc.parallelize(['hello world','hi'])
 >>> words = lines.flatMap(lambda line : line.split(' '))
 >>> words.first()
@@ -307,7 +307,7 @@ println(result.collect().mkString(","))
 
 ```
 > scala
-```
+```scala
 val lines = sc.parallelize(List('hello world','hi'))
 val words = lines.flatMap(lambda line => line.split(' '))
 words.first()	// returns "hello"
@@ -351,11 +351,11 @@ all of those opeartions require that the RDDs being operated on are of thensame 
 	- take a function that operates on 2 elements of the type in your RDD anf returns a new element of the same type
 
 > python
-```
+```python
 sum = rdd.reduce(lambda x,y : x + y)
 ```
 > scala
-```
+```scala
  val sum = rdd.reduce((x,y) => x + y)
 ```
 
@@ -371,12 +371,12 @@ first use map() where we transform every element into the element and the number
 
 single -> pair
 
-```
+```python
 rdd.map(lambda s : (s,1))
 ```
 
 then reduce() can work on pairs
-```
+```python
 rdd.reduceByKey(lambda a,b : (a[0] + b[0] , a[1] + b[1]))
 ```
 
@@ -388,7 +388,7 @@ rdd.reduceByKey(lambda a,b : (a[0] + b[0] , a[1] + b[1]))
 		- merge 2 accumulators, given that each node accumulates its own results locally
 
 > python
-```
+```python
 sumCount = nums.aggregate((0,0),
 		(lambda acc, value : (acc[0] + value, acc[1] + 1)),
 		(lamdda acc1, acc2 : (acc1[0] + acc2[0], acc1[1] + acc2[1])))
@@ -396,7 +396,7 @@ print sumCount[0] / float(sumCount[1])
 ```
 
 > scala
-```
+```scala
 val result = input.aggregate((0,0))(
 	(acc,value) => (acc._1 + value, acc._2 + 1),
 	(acc1,acc2) => (acc1._1 + acc2._1, acc1._2 + acc2._2))
@@ -459,7 +459,7 @@ val avg = result._1 / result._2.toDouble
 
 
 Level | Space Used | CPU Time | In Memory | On Disk | Comments
-- | - | - | - | - | -
+:-: | :-: | :-: | :-: | :-: | :-:
 MEMORY_ONLY | high | low | Y | N |  
 MEMORY_ONLY_SER | low | high | Y | N
 MEMORY_AND_DISK | high | medium | some | some | split to disk if there is too much data to fit in the memory
@@ -467,7 +467,7 @@ MEMORY_AND_DISK_SER | low | high | some | some | split to disk if there is too m
 DISK_ONLY | low | high | N | Y
 
 > persist() in Scala
-```
+```scala
 val result = input.map(x => x * x)
 result.persist(StorageLevel.DISK_ONLY)
 println(result.count())
